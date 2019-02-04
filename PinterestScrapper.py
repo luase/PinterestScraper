@@ -156,10 +156,12 @@ class UserScrapper(object):
 class PinterestScrapper(object):
     # Inicialización con parámetros. users debe ser un arreglo de strings
     # con los nombres de usuarios.
-    def __init__(self, users, driver):
+    def __init__(self, users, driver, email, passw):
         self.users     = users
         self.driver    = driver
         self.login_url = "https://www.pinterest.com/login/?referrer=home_page"
+        self.email     = email
+        self.passw     = passw
 
     # Inicia sesión en Pinterest encontrando los forms, llenándolos y
     # enviando.
@@ -167,8 +169,8 @@ class PinterestScrapper(object):
         self.driver.get(self.login_url)
         email = self.driver.find_element_by_xpath("//input[@type='email']")
         passw = self.driver.find_element_by_xpath("//input[@type='password']")
-        email.send_keys("jimbokoln@gmail.com")
-        passw.send_keys("zinzuk-pohjeh-6qagnE")
+        email.send_keys(self.email)
+        passw.send_keys(self.passw)
         passw.submit()
         time.sleep(5)
 

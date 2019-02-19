@@ -5,6 +5,17 @@ from selenium import webdriver
 from urllib.request import urlretrieve
 from selenium.webdriver.support import ui
 import os
+import re
+
+def saveHTML(driver, file):
+    try:
+        filename = os.path.join(file, "source.html")
+        with open(str(filename), "w") as text_file:
+            html = BeautifulSoup(driver.page_source, 'html.parser')
+            print(html, file = text_file)
+    except:
+        pass
+
 
 # Define un scraper de un pin de Pinterest
 class PinScrapper(object):
@@ -54,9 +65,9 @@ class PinScrapper(object):
                         title = div.text 
                         self.downloadText(title, 'title')
                 for div in pin.find_all("div", {"class": "_wa _0 _1 _2 _we _3c _d _b _5"}):
-                    print('found the class')
                     descr = div.text
                     self.downloadText(descr, 'descr')
+        saveHTML(self.driver, "./data/" + self.board + self.pin[4:])
 
     def scrapPin(self):
         self.pinDir()
@@ -68,24 +79,25 @@ class PinScrapper(object):
 class BoardScrapper(object):
     # Inicialización del objeto
     def __init__(self, board, driver):
-        self.board  = board
-        self.driver = driver
-        self.pins   = []
+        self.board_dir = ""
+        self.board     = board
+        self.driver    = driver
+        self.pins      = []
 
     # Método para crear el directorio donde se va guardar la información
     # del board  
     def boardDir(self):
-        board_dir = "./data/" + self.board
-        if not os.path.exists(board_dir):
-            os.makedirs(board_dir)
+        self.board_dir = "./data/" + self.board
+        if not os.path.exists(self.board_dir):
+            os.makedirs(self.board_dir)
 
     def collectPins(self):
         self.boardDir()
         self.driver.get('https://www.pinterest.com/' + str(self.board))
         start    = time.time()
-        # correr hasta que se tengan max. 1000 pins o pasen 5s de inactividad.
         run_time = time.time()
-        while len(self.pins) < 1000 and start -  run_time < 5:
+        # correr hasta que se tengan max. 1000 pins o pasen 5s de inactividad.
+        while len(self.pins) < 10000 and start -  run_time < 5:
             # Reiniciar el temporizador
             start = time.time()
             html  = BeautifulSoup(self.driver.page_source, 'html.parser')
@@ -103,14 +115,16 @@ class BoardScrapper(object):
     # Método para recolectar los links de los pins
     def scrapPins(self):
         self.collectPins()
+        saveHTML(self.driver, self.board_dir)
         for pin in self.pins:
             ps = PinScrapper(pin, self.board, self.driver)
             ps.scrapPin()
 
 # Define un scrapper de un usuario de Pinterest.
-class UserScrapper(object):    
+class UserScrapper(object):
     # Inicialización del objeto
     def __init__(self, username, driver):
+        self.user_dir = ""    
         self.username = username
         self.driver   = driver
         self.boards   = []
@@ -118,9 +132,9 @@ class UserScrapper(object):
     # Método para crear el directorio donde se va guardar la información
     # del usuario
     def userDir(self):
-        user_dir = "./data/" + self.username
-        if not os.path.exists(user_dir):
-            os.makedirs(user_dir)
+        self.user_dir = "./data/" + self.username
+        if not os.path.exists(self.user_dir):
+            os.makedirs(self.user_dir)
 
     def collectBoards(self):
         self.userDir()
@@ -133,7 +147,7 @@ class UserScrapper(object):
             start = time.time()
             html  = BeautifulSoup(self.driver.page_source, 'html.parser')
             # Encontrar los tableros
-            for boardWrapper in html.find_all('div', {'class': '_h _xx _4s'}):
+            for boardWrapper in html.find_all('div', {'class': 'zI7 iyn Hsu'}):
                 for a in boardWrapper.find_all('a'):
                     board = str(a.get('href'))
                     if self.username in board and board not in self.boards:
@@ -148,6 +162,8 @@ class UserScrapper(object):
 
     def scrapBoards(self):
         self.collectBoards()
+        # guardamos el html que describe la pagina del usuario.
+        saveHTML(self.driver, self.user_dir)
         for board in self.boards:
             bs = BoardScrapper(board, self.driver)
             bs.scrapPins()

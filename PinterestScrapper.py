@@ -53,20 +53,23 @@ class PinScrapper(object):
         html = BeautifulSoup(self.driver.page_source, "html.parser")
         for mainContainer in html.find_all("div", {"class": "mainContainer"}):
             for pin in mainContainer.find_all("div", {"class": "closeupContainer"}):
-                for img in pin.find_all("img"):
-                    image = img.get("src")
-                    alt   = img.get("alt")
-                    if "564" in image:
-                        self.downloadImage(image)
-                        self.downloadText(alt, 'alt')
-                        break
-                for h5 in pin.find_all('h5'):
-                    for div in h5.find_all('div'):
-                        title = div.text 
-                        self.downloadText(title, 'title')
-                for div in pin.find_all("div", {"class": "_wa _0 _1 _2 _we _3c _d _b _5"}):
-                    descr = div.text
-                    self.downloadText(descr, 'descr')
+                try:
+                    for img in pin.find_all("img"):
+                        image = img.get("src")
+                        alt   = img.get("alt")
+                        if "564" in image:
+                            self.downloadImage(image)
+                            self.downloadText(alt, 'alt')
+                            break
+                    for h5 in pin.find_all('h5'):
+                        for div in h5.find_all('div'):
+                            title = div.text 
+                            self.downloadText(title, 'title')
+                    for div in pin.find_all("div", {"class": "_wa _0 _1 _2 _we _3c _d _b _5"}):
+                        descr = div.text
+                        self.downloadText(descr, 'descr')      
+                except Exception as e:
+                    raise e
         saveHTML(self.driver, "./data/" + self.board + self.pin[4:])
 
     def scrapPin(self):

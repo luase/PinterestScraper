@@ -12,7 +12,7 @@ def main():
 	# lista de usuarios
 	users, sex, age = np.genfromtxt('user_list.txt', unpack=True, dtype=None, encoding=None)
 	# crear el PinterestScrapper
-	ps = PinterestScrapper.PinterestScrapper(users[12:], driver, email, passw)
+	ps = PinterestScrapper.PinterestScrapper(users, driver, email, passw)
 	# Empezar a obtener la info de los usuarios
 	ps.scrapUsers()
 

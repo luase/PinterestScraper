@@ -15,3 +15,6 @@ venv.bak/
 # project stuff
 .DS_Store
 data/
+sample/
+.vscode/
+data.zip

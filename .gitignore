@@ -16,5 +16,7 @@ venv.bak/
 .DS_Store
 data/
 sample/
+data-paths/
+sample-paths/
 .vscode/
 data.zip

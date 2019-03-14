@@ -60,8 +60,10 @@ def valid_boards(path, vbp):
 	for board in path.iterdir():
 		if board.is_dir():
 			if has_file(board, 'source.html') and has_directory(board):
-				# print(board)
-				vbp.append(board)
+				if str(board.name) == 'pins':
+					print(str(board.name))
+				else:
+					vbp.append(board)
 
 # Valid pins
 def valid_pins(path, vpp):
@@ -71,52 +73,46 @@ def valid_pins(path, vpp):
 				# print(pin)
 				vpp.append(pin)
 
+def savePath(path, fname, conj):
+	a = list(conj)
+	a.sort()
+	with open(path + fname, 'w') as f:
+		for item in a:
+			f.write("%s\n" % item)
+
 
 def main():
 	# path de origen
-	p = Path('./sample')
-
+	p = Path('./data')
 	# usuarios pre-validados (tienen source.html y directorios)
 	pv_users = valid_users(p)
-
 	# boards pre-validados
 	pv_boards = []
 	for user in pv_users:
 		valid_boards(user, pv_boards)
-
 	# pins validos
 	v_pins = []
 	for board in pv_boards:
 		valid_pins(board, v_pins)
-
-	v_pins.sort()
-	# # pins únicos válidos
-	# u_pins = set()
-	# for pin in v_pins:
-	# 	u_pins.add(pin.name)
-
+	# pins únicos válidos
+	u_pins = set()
+	for pin in v_pins:
+		u_pins.add(pin.name)
+	# boards validos
 	v_boards = set()
 	for x in v_pins:
 		v_boards.add(x.parent)
-
+	# users validos
 	v_users = set()
 	for x in v_boards:
 		v_users.add(x.parent)
 
-	a = list(v_users)
-	a.sort()
-	with open('./sample-paths/invalid_pins.txt', 'w') as f:
-		for item in v_pins:
-			f.write("%s\n" % item)
+	pathDir = str(p) + '-paths/'
+	savePath(pathDir, 'unique_pins.txt', u_pins)
+	savePath(pathDir, 'valid_boards.txt', v_boards)
+	savePath(pathDir, 'valid_pins.txt', v_pins)
+	savePath(pathDir, 'valid_users.txt', v_users)
 
-	# print('valid pins:', len(v_pins))
-	# print('unique pins:', len(u_pins))
-
-	# print('\nprevalidated boards:', len(pv_boards))
-	# print('valid boards:', len(v_boards))
-
-	# print('\nprevalidated users:', len(pv_users))
-	# print('valid users:', len(v_users))
 
 if __name__ == '__main__':
 	main()
